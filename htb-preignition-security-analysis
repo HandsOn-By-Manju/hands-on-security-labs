@@ -1,0 +1,277 @@
+# 🛡️ HTB Lab – Preignition Security Analysis
+
+> Practical hands-on security lab focused on reconnaissance, web enumeration, hidden content discovery, and authentication weaknesses.
+
+---
+
+## 🎯 Objective
+
+Understand how exposed administrative interfaces and weak authentication controls can lead to unauthorized access.
+
+---
+
+## 📌 Lab Information
+
+| Property | Value |
+|-----------|--------|
+| 🏢 Platform | Hack The Box |
+| 💻 Machine | Preignition |
+| 📂 Category | Web Security |
+| 🔍 Focus Area | Authentication Security |
+| 🛠 Difficulty | Very Easy |
+
+---
+
+# 🔎 Reconnaissance Phase
+
+## 🌐 Full Port Scan
+
+### Command
+
+```bash
+nmap -v -Pn -p- --min-rate 10000 -T4 TARGET_IP
+```
+
+### Result
+
+```text
+PORT   STATE SERVICE
+80/tcp open  http
+```
+
+### Observation
+
+✅ Only one exposed service found
+
+✅ HTTP identified as attack surface
+
+✅ Further web enumeration required
+
+---
+
+## 🔬 Service Enumeration
+
+### Command
+
+```bash
+nmap -sC -sV -p80 TARGET_IP
+```
+
+### Result
+
+```text
+PORT   STATE SERVICE VERSION
+80/tcp open  http nginx 1.14.2
+
+http-title: Welcome to nginx!
+```
+
+### Observation
+
+✅ nginx version detected
+
+✅ Default nginx page displayed
+
+⚠ Hidden application likely exists behind default page
+
+---
+
+# 🌍 Initial Web Investigation
+
+### Command
+
+```bash
+curl http://TARGET_IP
+```
+
+### Result
+
+```html
+Welcome to nginx!
+```
+
+### Observation
+
+❌ No useful functionality visible
+
+❌ No application links exposed
+
+✅ Additional enumeration required
+
+---
+
+# 📁 Content Discovery
+
+### Command
+
+```bash
+gobuster dir \
+-u http://TARGET_IP \
+-w /usr/share/wordlists/dirb/common.txt
+```
+
+### Result
+
+```text
+admin.php (Status: 200)
+```
+
+### Discovery
+
+```text
+http://TARGET_IP/admin.php
+```
+
+### Observation
+
+🚨 Hidden administrative interface discovered
+
+---
+
+# 🔐 Authentication Analysis
+
+Admin login page contained:
+
+- 👤 Username field
+- 🔑 Password field
+
+Security observations:
+
+❌ No MFA
+
+❌ No CAPTCHA
+
+❌ No account lockout
+
+❌ No brute-force protection
+
+❌ No visible CSRF protection
+
+---
+
+# ⚔ Authentication Testing
+
+### Request
+
+```http
+POST /admin.php HTTP/1.1
+
+username=admin&password=admin
+```
+
+### Result
+
+```text
+Authentication Successful
+```
+
+### Observation
+
+🚨 Weak/default credentials allowed administrative access
+
+---
+
+# 🚨 Security Finding
+
+## Weak Authentication Controls
+
+### Description
+
+Administrative access was possible through weak/default credentials.
+
+### Impact
+
+Attackers could gain unauthorized access without exploiting any software vulnerability.
+
+### Risk Level
+
+🔴 High
+
+---
+
+# 🧠 Attacker Methodology
+
+```text
+Nmap Scan
+    ↓
+HTTP Service Discovery
+    ↓
+Default nginx Page
+    ↓
+Directory Enumeration
+    ↓
+admin.php Discovery
+    ↓
+Authentication Testing
+    ↓
+Default Credentials Successful
+    ↓
+Administrative Access
+```
+
+---
+
+# 🎯 MITRE ATT&CK Mapping
+
+| Technique | ATT&CK ID |
+|------------|------------|
+| Valid Accounts | T1078 |
+| Brute Force | T1110 |
+
+---
+
+# 🛡 Defender Recommendations
+
+✅ Remove default credentials
+
+✅ Enforce strong password policies
+
+✅ Enable MFA
+
+✅ Implement account lockout
+
+✅ Restrict administrative interfaces
+
+✅ Add rate limiting
+
+✅ Monitor failed login attempts
+
+---
+
+# 💡 Key Learning
+
+> Not every compromise begins with advanced exploitation.
+
+> Sometimes attackers simply discover exposed administrative interfaces protected by weak credentials.
+
+---
+
+# 🛠 Tools Used
+
+- Nmap
+- Gobuster
+- Burp Suite
+- Firefox
+- Curl
+
+---
+
+# 📚 Skills Practiced
+
+✔ Reconnaissance
+
+✔ Service Enumeration
+
+✔ Web Enumeration
+
+✔ Authentication Testing
+
+✔ Security Analysis
+
+✔ Defensive Thinking
+
+---
+
+# ⚠ Disclaimer
+
+This repository contains educational content created from hands-on lab environments for learning and defensive security awareness purposes only.
